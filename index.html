@@ -1,0 +1,101 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.90/Build/Cesium/Cesium.js"></script>
+    <link
+      href="https://cesium.com/downloads/cesiumjs/releases/1.80/Build/Cesium/Widgets/widgets.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div id="cesiumContainer" style="width: 100%; height: 100%"></div>
+    <script>
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4N2RkY2M3Ny00MTA2LTRmNjMtYjBkNS04NDdhNmVlMTBmZDQiLCJpZCI6NDcyNzcsImlhdCI6MTYxNzAzMTkzNn0.nQKrfRXx4K7qz8_FWBnS7EfE7Uj8Jhm49ReO508KGrc"
+
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        baseLayerPicker: true,
+        vrButton: true,
+        geocoder: false,
+        navigationHelpButton: false,
+        selectionIndicator: true,
+        shadows: false,
+        showOutline: true,
+        timeline: false,
+        sceneModePicker: true,
+      })
+
+      const Cesium3DTileset = new Cesium.Cesium3DTileset({
+        name: "Taichung",
+        url: "./taichung_4326/tileset.json",
+      })
+
+      const tileset = viewer.scene.primitives.add(Cesium3DTileset)
+
+      Cesium.when(tileset.readyPromise).then(function (tileset) {
+        console.log(
+          "Maximum building height: " + tileset.properties.floors.maximum
+        )
+
+        //save the max floor
+        const MaxFloor = tileset.properties.floors.maximum
+
+        const conds = []
+        for (let i = 1; i <= MaxFloor; i++) {
+          const ratio = i / (i + 1)
+          //to make a rainbow style buildings
+          if (i <= 3) {
+            conds.push([
+              `\${floors} === ${i}`, // 被` `包住的字串裡面的${}會被視為變數，所以需要加上反斜線 '\'來跳脫字元
+              `rgba(${225}, ${255}, ${255},${0.99})`,
+            ])
+          } else if (i > 3 && i <= 6)
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${255}, ${127 * ratio}, ${0},${0.99})`,
+            ])
+          else if (i > 6 && i <= 9)
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${255}, ${255 * ratio}, ${0},${0.8})`,
+            ])
+          else if (i > 9 && i <= 12)
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${0}, ${255 * ratio}, ${0},${0.8})`,
+            ])
+          else if (i > 12 && i <= 15)
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${0}, ${255 * ratio}, ${0},${0.8})`,
+            ])
+          else if (i > 15 && i <= 18)
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${0}, ${0}, ${255 * ratio},${0.8})`,
+            ])
+          else if (i > 18 && i <= 21)
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${75 * ratio}, ${0}, ${130},${0.8})`,
+            ])
+          else
+            conds.push([
+              `\${floors} === ${i}`,
+              `rgba(${148 * ratio}, ${0}, ${211},${0.8})`,
+            ])
+        }
+        console.log(conds)
+
+        tileset.style = new Cesium.Cesium3DTileStyle({
+          show: "${ID}>=0",
+          color: {
+            conditions: conds,
+          },
+        })
+        viewer.flyTo(tileset)
+      })
+    </script>
+  </body>
+</html>
