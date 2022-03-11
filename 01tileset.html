@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.67/Build/Cesium/Cesium.js"></script>
+    <link
+      href="https://cesium.com/downloads/cesiumjs/releases/1.67/Build/Cesium/Widgets/widgets.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <select id="mySelect" onchange="myFunction()">
+      <option value="beitou">beitou</option>
+      <option value="daan">daan</option>
+      <option value="datong">datong</option>
+      <option value="nangang">nangang</option>
+      <option value="neihu">neihu</option>
+      <option value="shilin">shilin</option>
+      <option value="songshan">songshan</option>
+      <option value="wanhua">wanhua</option>
+      <option value="wenshan">wenshan</option>
+      <option value="xinyi">xinyi</option>
+      <option value="zhongshan">zhongshan</option>
+      <option value="zhongzheng">zhongzheng</option>
+    </select>
+
+    <div id="cesiumContainer" style="width: 100%; height: 100%"></div>
+    <script>
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzMjRiY2VkYi03ZWEwLTQ3NjUtOWYzZS00ZTQwZjRlYzhiNDQiLCJpZCI6MjIyNjUsInNjb3BlcyI6WyJhc2wiLCJhc3IiLCJhc3ciLCJnYyJdLCJpYXQiOjE1ODIxMjgwOTZ9.c80Q9SfmsdDABXB3hh8l6yh8eW9F9-gvYVa2vRc-YUY"
+
+      var viewer = new Cesium.Viewer("cesiumContainer")
+
+      //處理字串
+      function myFunction() {
+        var x = document.getElementById("mySelect").value
+        var t1 = x + "/3dTiles/tileset.json"
+
+        //加载3Dtiles
+        var tileset = new Cesium.Cesium3DTileset({ url: t1 })
+        viewer.scene.primitives.add(tileset)
+        viewer.flyTo(tileset)
+
+        tileset.style = new Cesium.Cesium3DTileStyle({
+          color: {
+            conditions: [
+              ["${noice} >= 100", "rgb(26,152,80)"],
+              ["${noice} >= 90", "rgb(102,189,99)"],
+              ["${noice} >= 80", "rgb(166,217,106)"],
+              ["${noice} >= 70", "rgb(217,239,139)"],
+              ["${noice} >= 60", "rgb(254,224,139)"],
+              ["${noice} >= 50", "rgb(253,174,97)"],
+              ["${noice} >= 40", "rgb(244,109,67)"],
+              ["true", "rgba(215, 48, 39, 0.5)"],
+            ],
+          },
+          show: "${floors} > 0",
+          meta: {
+            description: '"Building id ${id} has floors ${floors}."',
+          },
+        })
+      }
+    </script>
+  </body>
+</html>

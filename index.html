@@ -6,10 +6,33 @@
       href="https://cesium.com/downloads/cesiumjs/releases/1.80/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
+
+    <style>
+      #cesiumContainer {
+        position: relative;
+        width: 97%;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    </style>
+    <title>中研院永續計畫 子計畫二</title>
   </head>
 
   <body>
-    <div id="cesiumContainer" style="width: 100%; height: 100%"></div>
+    <div id="cesiumContainer" style="width: 98%; height: 98%">
+      <select id="area" onchange="loadArea(this)">
+        <option value="default">請選擇</option>
+        <option value="central">中區</option>
+        <option value="east">東區</option>
+        <option value="south">南區</option>
+        <option value="west">西區</option>
+        <option value="north">北區</option>
+        <option value="xitun">西屯區</option>
+        <option value="nantun">南屯區</option>
+        <option value="beitun">北屯區</option>
+      </select>
+    </div>
+
     <script>
       Cesium.Ion.defaultAccessToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4N2RkY2M3Ny00MTA2LTRmNjMtYjBkNS04NDdhNmVlMTBmZDQiLCJpZCI6NDcyNzcsImlhdCI6MTYxNzAzMTkzNn0.nQKrfRXx4K7qz8_FWBnS7EfE7Uj8Jhm49ReO508KGrc"
@@ -25,77 +48,62 @@
         timeline: false,
         sceneModePicker: true,
       })
-
-      const Cesium3DTileset = new Cesium.Cesium3DTileset({
-        name: "Taichung",
-        url: "./taichung_4326/tileset.json",
-      })
-
-      const tileset = viewer.scene.primitives.add(Cesium3DTileset)
-
-      Cesium.when(tileset.readyPromise).then(function (tileset) {
-        console.log(
-          "Maximum building height: " + tileset.properties.floors.maximum
-        )
-
-        //save the max floor
-        const MaxFloor = tileset.properties.floors.maximum
-
-        const conds = []
-        for (let i = 1; i <= MaxFloor; i++) {
-          const ratio = i / (i + 1)
-          //to make a rainbow style buildings
-          if (i <= 3) {
-            conds.push([
-              `\${floors} === ${i}`, // 被` `包住的字串裡面的${}會被視為變數，所以需要加上反斜線 '\'來跳脫字元
-              `rgba(${225}, ${255}, ${255},${0.99})`,
-            ])
-          } else if (i > 3 && i <= 6)
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${255}, ${127 * ratio}, ${0},${0.99})`,
-            ])
-          else if (i > 6 && i <= 9)
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${255}, ${255 * ratio}, ${0},${0.8})`,
-            ])
-          else if (i > 9 && i <= 12)
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${0}, ${255 * ratio}, ${0},${0.8})`,
-            ])
-          else if (i > 12 && i <= 15)
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${0}, ${255 * ratio}, ${0},${0.8})`,
-            ])
-          else if (i > 15 && i <= 18)
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${0}, ${0}, ${255 * ratio},${0.8})`,
-            ])
-          else if (i > 18 && i <= 21)
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${75 * ratio}, ${0}, ${130},${0.8})`,
-            ])
-          else
-            conds.push([
-              `\${floors} === ${i}`,
-              `rgba(${148 * ratio}, ${0}, ${211},${0.8})`,
-            ])
+      //處理選單字串
+      function loadArea(select) {
+        console.log(select.value)
+        let path
+        switch (select.value) {
+          case "central":
+            path = "./3Dtiles/central/tileset.json"
+            break
+          case "east":
+            path = "./3Dtiles/east/tileset.json"
+            break
+          case "south":
+            path = "./3Dtiles/south/tileset.json"
+            break
+          case "west":
+            path = "./3Dtiles/west/tileset.json"
+            break
+          case "north":
+            path = "./3Dtiles/north/tileset.json"
+            break
+          case "xitun":
+            path = "./3Dtiles/xitun/tileset.json"
+            break
+          case "nantun":
+            path = "./3Dtiles/nantun/tileset.json"
+            break
+          case "beitun":
+            path = "./3Dtiles/beitun/tileset.json"
+            break
+          default:
+            break
         }
-        console.log(conds)
 
+        const tileset = new Cesium.Cesium3DTileset({
+          name: "taichung",
+          url: path,
+        })
+
+        viewer.scene.primitives.add(tileset)
+        viewer.flyTo(tileset)
         tileset.style = new Cesium.Cesium3DTileStyle({
-          show: "${ID}>=0",
+          show: "${floors}>=0",
           color: {
-            conditions: conds,
+            conditions: [
+              ["${floors} >= 40", "rgb(26,152,80)"],
+              ["${floors} >= 30", "rgb(102,189,99)"],
+              ["${floors} >= 25", "rgb(166,217,106)"],
+              ["${floors} >= 20", "rgb(217,239,139)"],
+              ["${floors} >= 15", "rgb(254,224,139)"],
+              ["${floors} >= 10", "rgb(253,174,97)"],
+              ["${floors} >= 5", "rgb(245,92,0)"],
+              ["true", "rgba(255,97,85,0.5)"],
+            ],
           },
         })
-        viewer.flyTo(tileset)
-      })
+      }
     </script>
   </body>
 </html>
